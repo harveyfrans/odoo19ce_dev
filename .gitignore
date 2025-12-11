@@ -1,0 +1,57 @@
+# Odoo 18 EE Development - Git Ignore Rules
+
+# Sensitive files (NEVER commit)
+.env.secrets
+secrets/
+
+# Database snapshots (can be large)
+snapshots/
+*.dump
+*.sql
+
+# Log files
+logs/
+*.log
+
+# Docker volumes data
+postgres_data/
+odoo_data/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local certs (private keys must never be committed)
+certs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Enterprise source (manage separately or as submodule)
+odoo_enterprise/
+
+# Node modules (if using JS development)
+node_modules/
+
+# Virtual environments
+venv/
+env/
+
+# Docker override files
+docker-compose.override.yml
+EOF

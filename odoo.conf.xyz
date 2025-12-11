@@ -1,0 +1,38 @@
+[options]
+# Administrative Configuration
+admin_passwd = ${ADMIN_PASS}
+
+# Database Connection
+db_host = ${POSTGRES_HOST}
+db_port = 5432
+db_user = ${POSTGRES_USER}
+db_password = ${POSTGRES_PASSWORD}
+
+# Addon Paths - Dynamically set based on edition
+# CE: /usr/lib/python3/dist-packages/odoo/addons,/mnt/custom_addons
+# EE: /usr/lib/python3/dist-packages/odoo/addons,/mnt/odoo_enterprise,/mnt/custom_addons
+addons_path = /usr/lib/python3/dist-packages/odoo/addons,${CUSTOM_ADDONS}
+
+# Logging Configuration
+log_level = ${LOG_LEVEL}
+logfile = /var/log/odoo/odoo.log
+
+# Development Settings
+limit_time_cpu = 0
+limit_time_real = 0
+limit_time_real_cron = 0
+
+# Multi-processing (uncomment for performance testing)
+workers = ${WORKERS}
+# When workers > 0, enable these:
+; max_cron_threads = 2
+; proxy_mode = True
+
+# Development Features
+list_db = True
+
+# Security (Development Only)
+admin_passwd_insecure = True
+
+# File Upload Configuration
+max_file_upload_size = 134217728

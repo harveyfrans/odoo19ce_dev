@@ -1,0 +1,116 @@
+services:
+  db:
+    image: postgres:17
+    container_name: odoo19_postgres
+    env_file:
+      - .env
+      - .env.secrets
+    environment:
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+      TZ: ${TZ}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - pgdata19:/var/lib/postgresql/data
+      - ./logs:/var/log/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  odoo:
+    image: odoo:${ODOO_VERSION}
+    container_name: odoo19ce_app
+    env_file:
+      - .env
+      - .env.secrets
+    environment:
+      TZ: ${TZ}
+    depends_on:
+      db:
+        condition: service_healthy
+    # Render /etc/odoo/odoo.conf from template using env, then start Odoo
+    volumes:
+      - ./templates:/templates:ro
+      - ./custom_addons:${CUSTOM_ADDONS}:rw
+      # --- EE OPTIONAL (uncomment when you have enterprise source) ---
+      # - ./odoo_enterprise:/mnt/odoo_enterprise:ro
+      # ---------------------------------------------------------------
+      - odoo19_filestore:/var/lib/odoo/filestore
+      - ./logs:/var/log/odoo
+      - ./seeds:/mnt/seeds:ro
+    command: >
+      sh -lc '
+      EE_PATH=""; [ "$${ODOO_EDITION}" = "ee" ] && EE_PATH=",/mnt/odoo_enterprise";
+      PM=$([ "$${PROXY_MODE}" = "true" ] && echo True || echo False);
+      ADDONS="/usr/lib/python3/dist-packages/odoo/addons,$${CUSTOM_ADDONS}$${EE_PATH}";
+      sed -e "s|{{ADMIN_PASS}}|$${ADMIN_PASS}|g" \
+          -e "s|{{POSTGRES_HOST}}|$${POSTGRES_HOST}|g" \
+          -e "s|{{POSTGRES_USER}}|$${POSTGRES_USER}|g" \
+          -e "s|{{PASSWORD}}|$${PASSWORD}|g" \
+          -e "s|{{ADDONS_PATH}}|$${ADDONS}|g" \
+          -e "s|{{LOG_LEVEL}}|$${LOG_LEVEL}|g" \
+          -e "s|{{PROXY_MODE}}|$${PM}|g" \
+          -e "s|{{WORKERS}}|$${WORKERS}|g" \
+          /templates/odoo.conf.tpl > /etc/odoo/odoo.conf;
+      exec odoo -c /etc/odoo/odoo.conf
+      '
+    ports:
+      - "${ODOO_HTTP_PORT}:8069"   # dev: direct access keeps working
+      - "19072:8072"               # longpoll
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8069/web/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    restart: unless-stopped
+  
+  nginx:
+    image: nginx:alpine
+    container_name: odoo19ce_nginx
+    env_file:
+      - .env
+    environment:
+      TZ: ${TZ}
+    depends_on:
+      odoo:
+        condition: service_healthy
+    ports:
+      - "8081:80"      # dev default; in prod map 80:80 and add 443:443
+      # - "443:443"    # prod/TLS — uncomment when ENABLE_TLS=true and certs are mounted
+    volumes:
+      - ./templates/nginx:/templates/nginx:ro
+      - ./logs:/var/log/nginx
+      # Mount manual certs for TLS (see .env TLS_CERT/TLS_KEY)
+      # - ./certs:/etc/nginx/certs:ro
+    command: >
+      sh -lc '
+      TPL=/templates/nginx/odoo.http.conf.tpl; [ "$${ENABLE_TLS}" = "true" ] && TPL=/templates/nginx/odoo.https.conf.tpl;
+      sed -e "s|{{SERVER_NAME}}|$${SERVER_NAME}|g" \
+          -e "s|{{CLIENT_MAX_BODY_SIZE}}|$${CLIENT_MAX_BODY_SIZE}|g" \
+          -e "s|{{NGINX_PROXY_READ_TIMEOUT}}|$${NGINX_PROXY_READ_TIMEOUT}|g" \
+          -e "s|{{TLS_CERT}}|$${TLS_CERT}|g" \
+          -e "s|{{TLS_KEY}}|$${TLS_KEY}|g" \
+          "$${TPL}" > /etc/nginx/conf.d/odoo.conf;
+      nginx -t && exec nginx -g "daemon off;"
+      '
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  pgdata19:
+    driver: local
+  odoo19_filestore:
+    driver: local
+
+networks:
+  default:
+    name: odoo19_network
