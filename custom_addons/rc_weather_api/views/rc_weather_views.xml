@@ -1,0 +1,70 @@
+<odoo>
+    <!-- Action -->
+    <record id="action_rc_weather_request" model="ir.actions.act_window">
+        <field name="name">Pemeriksa Cuaca Eksternal</field>
+        <field name="res_model">rc.weather.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p>
+                Form sederhana untuk mengecek cuaca dari API eksternal
+                berdasarkan nama kota.
+            </p>
+        </field>
+    </record>
+
+    <!-- Root Menu -->
+    <menuitem id="menu_rc_weather_root"
+              name="Pemeriksa Cuaca"
+              sequence="10"/>
+
+    <!-- Submenu -->
+    <menuitem id="menu_rc_weather_request"
+              name="Pemeriksa Cuaca Eksternal"
+              parent="menu_rc_weather_root"
+              action="action_rc_weather_request"
+              sequence="10"/>
+
+    <!-- List view -->
+    <record id="view_rc_weather_request_list" model="ir.ui.view">
+        <field name="name">rc.weather.request.list</field>
+        <field name="model">rc.weather.request</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="temperature"/>
+                <field name="weather_description"/>
+                <field name="status"/>
+                <field name="last_updated"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="view_rc_weather_request_form" model="ir.ui.view">
+        <field name="name">rc.weather.request.form</field>
+        <field name="model">rc.weather.request</field>
+        <field name="arch" type="xml">
+            <form string="Pemeriksa Cuaca">
+                <header>
+                    <button name="action_get_weather"
+                            string="Dapatkan Cuaca"
+                            type="object"
+                            class="btn-primary"/>
+                    <field name="status" widget="statusbar"
+                           statusbar_visible="draft,ok,error"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="temperature" readonly="1"/>
+                        <field name="weather_description" readonly="1"/>
+                        <field name="last_updated" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="error_message" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
