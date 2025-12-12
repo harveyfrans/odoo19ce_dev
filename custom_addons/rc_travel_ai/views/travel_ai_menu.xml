@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+
+    <record id="action_travel_ai_log" model="ir.actions.act_window">
+      <field name="name">Travel AI Logs</field>
+      <field name="res_model">travel.ai.log</field>
+      <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_travel_ai_root"
+              name="Travel AI"
+              sequence="50"
+              parent="sale.sale_menu_root"/>
+
+    <menuitem id="menu_travel_ai_log"
+              name="AI Logs"
+              parent="menu_travel_ai_root"
+              action="action_travel_ai_log"
+              sequence="10"/>
+
+    <record id="view_travel_ai_log_list" model="ir.ui.view">
+      <field name="name">travel.ai.log.list</field>
+      <field name="model">travel.ai.log</field>
+      <field name="arch" type="xml">
+        <list>
+          <field name="create_date"/>
+          <field name="request_text"/>
+          <field name="destination"/>
+          <field name="days"/>
+          <field name="budget_max"/>
+          <field name="company_id"/>
+          <field name="state"/>
+        </list>
+      </field>
+    </record>
+
+    <record id="view_travel_ai_log_form" model="ir.ui.view">
+      <field name="name">travel.ai.log.form</field>
+      <field name="model">travel.ai.log</field>
+      <field name="arch" type="xml">
+        <form string="Travel AI Log">
+          <sheet>
+            <group>
+              <field name="request_text"/>
+              <field name="destination"/>
+              <field name="days"/>
+              <field name="budget_min"/>
+              <field name="budget_max"/>
+              <field name="company_id"/>
+              <field name="state"/>
+            </group>
+            <notebook>
+              <page string="Produk Rekomendasi">
+                <field name="product_ids" widget="many2many_tags"/>
+              </page>
+              <page string="Sales Orders">
+                <field name="sale_order_ids"/>
+              </page>
+            </notebook>
+          </sheet>
+        </form>
+      </field>
+    </record>
+
+  </data>
+</odoo>

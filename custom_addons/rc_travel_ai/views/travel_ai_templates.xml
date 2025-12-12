@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+    <!-- <template id="travel_ai_page" name="Travel AI Assistant" page="True"> -->
+    <template id="travel_ai_page" name="Travel AI Assistant"> <!-- solution 3 -->
+      <t t-call="website.layout">
+        <div class="container mt-4 mb-4">
+          <h1>Asisten Travel (Simulasi AI)</h1>
+          <p>
+            Masukkan kebutuhan liburan Anda, misalnya:
+            <em>"Saya ingin liburan ke Bali 5 hari dengan budget 5 juta."</em>
+          </p>
+
+          <t t-if="error_message">
+            <div class="alert alert-danger" role="alert">
+              <t t-esc="error_message"/>
+            </div>
+          </t>
+
+          <form method="post" action="/travel/ai">
+            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/> <!-- solution 1 -->
+            <div class="form-group mb-3">
+              <label for="question">Pertanyaan / Kebutuhan</label>
+              <textarea name="question" id="question" class="form-control" rows="3" required="required"><t t-esc="log.request_text if log else ''"/></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Dapatkan Rekomendasi</button>
+          </form>
+
+          <t t-if="log">
+            <hr/>
+            <h2>Hasil Rekomendasi</h2>
+
+            <p>
+              <strong>Destinasi:</strong>
+              <t t-esc="log.destination or 'Tidak terdeteksi'"/>
+              <span> | </span>
+
+              <strong>Durasi (hari):</strong>
+              <t t-esc="log.days or 'Tidak terdeteksi'"/>
+              <span> | </span>
+
+              <strong>Budget Maksimal:</strong>
+              <t t-esc="log.budget_max or 0"/>
+            </p>
+
+            <t t-if="log.product_ids">
+              <div class="row">
+                <t t-foreach="log.product_ids" t-as="prod">
+                  <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <h5 class="card-title">
+                          <t t-esc="prod.name"/>
+                        </h5>
+
+                        <p class="card-text">
+                          <strong>Destinasi:</strong>
+                          <t t-esc="prod.travel_destination or '-'"/><br/>
+                          <strong>Durasi:</strong>
+                          <t t-esc="prod.travel_days or 0"/> hari<br/>
+                          <strong>Harga:</strong>
+                          <t t-esc="prod.list_price"/>
+                        </p>
+
+                        <!-- <a t-att-href="'/travel/ai/buy/%s/%s' % (log.id, prod.id)"
+                          class="btn btn-success"> -->
+                        <a t-attf-href="/travel/ai/buy/#{log.id}/#{prod.id}" class="btn btn-success"> <!-- solution 2 -->
+                          Beli Sekarang
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </t>
+              </div>
+            </t>
+
+            <t t-if="not log.product_ids">
+              <div class="alert alert-warning" role="alert">
+                Tidak ada produk yang cocok dengan kriteria Anda.
+              </div>
+            </t>
+          </t>
+
+        </div>
+      </t>
+    </template>
+  </data>
+</odoo>
