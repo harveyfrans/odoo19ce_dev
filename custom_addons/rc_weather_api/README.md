@@ -1,69 +1,87 @@
 # RC Weather API (Tes Kompetensi – Bagian 1.1)
 
-Integrasi API cuaca sederhana menggunakan layanan publik `wttr.in` (tanpa API key).
+Modul integrasi cuaca untuk Odoo 19 Community dengan **2 provider**:
+
+1. **wttr.in** (tanpa API key)
+2. **OpenWeather** (butuh API key via System Parameters)
 
 ## Tujuan
 
 Mendemonstrasikan:
 
-- Integrasi Odoo 19 dengan layanan eksternal via HTTP (`requests`).
-- Form sederhana dengan tombol aksi.
-- Penanganan error dan tampilan hasil di field yang sama.
+- Integrasi Odoo 19 dengan layanan eksternal via HTTP (`requests`)
+- Form sederhana dengan tombol aksi
+- Error handling & result display pada record yang sama
+- Konfigurasi API key via `ir.config_parameter` (OpenWeather)
+
+---
 
 ## Fitur
 
-- Menu backend: **Pemeriksa Cuaca → Pemeriksa Cuaca Eksternal**.
-- Model: `rc.weather.request`.
-- Field utama:
-  - **Nama Kota** (`name`)
-  - **Suhu (°C)` (`temperature`)
-  - **Deskripsi Cuaca** (`weather_description`)
-  - **Terakhir Diperbarui** (`last_updated`)
-  - **Status** (`status`: Draft / OK / Error)
-  - **Pesan Error** (`error_message`)
-- Tombol **Dapatkan Cuaca**:
-  - Memanggil layanan `https://wttr.in/<kota>?format=j1`
-  - Mengambil suhu dalam °C dan deskripsi cuaca
-  - Menyimpan hasil di record yang sama
+### Menu Backend
+- **Pemeriksa Cuaca → Pemeriksa Cuaca (wttr.in)**
+- **Pemeriksa Cuaca → Pemeriksa Cuaca (OpenWeather)**
 
-## Cara Pakai
+### Model
+- `rc.weather.request` (provider: wttr.in)
+- `rc.openweather.request` (provider: OpenWeather)
 
-1. Pastikan modul `rc_weather_api` terinstall.
-2. Buka menu:
+### Field
+- **Nama Kota** (`name`)
+- **Suhu (°C)** (`temperature`)
+- **Deskripsi Cuaca** (`weather_description`)
+- **Terakhir Diperbarui** (`last_updated`)
+- **Status** (`status`: Draft / OK / Error)
+- **Pesan Error** (`error_message`)
 
-   - **Pemeriksa Cuaca → Pemeriksa Cuaca Eksternal**
+---
 
-3. Klik **New**, isi:
+## Cara Pakai (wttr.in)
 
-   - **Nama Kota** – contoh: `Jakarta`, `Bandung`, `Tokyo`.
+1. Install modul `rc_weather_api`.
+2. Buka:
+   - **Pemeriksa Cuaca → Pemeriksa Cuaca (wttr.in)**
+3. Create record, isi **Nama Kota**
+4. Klik **Dapatkan Cuaca (wttr.in)**
 
-4. Klik tombol **Dapatkan Cuaca**:
+API:
+- `https://wttr.in/<kota>?format=j1`
 
-   - Jika sukses:
-     - **Suhu (°C)** dan **Deskripsi Cuaca** terisi.
-     - **Status** = `OK`.
-     - **Pesan Error** kosong.
-   - Jika gagal (jaringan / format response / HTTP error):
-     - **Status** = `Error`.
-     - Detail disimpan di **Pesan Error**.
+---
 
-## Detail Teknis
+## Cara Pakai (OpenWeather)
 
-- Layanan eksternal: `wttr.in` JSON (`?format=j1`).
-- Library HTTP: `requests`.
-- Parsing data:
-  - `current_condition[0].temp_C` → `temperature`
-  - `current_condition[0].weatherDesc[0].value` → `weather_description`
-- Error handling:
-  - Timeout / koneksi → pesan error disimpan di field *Pesan Error*.
-  - HTTP status ≠ 200 → pesan error berisi kode HTTP dan nama kota.
-  - Struktur JSON tidak sesuai → pesan error dengan detail parsing.
+### 1) Set API Key
+1. Aktifkan Developer Mode (jika belum).
+2. Masuk ke **Settings → Technical → Parameters → System Parameters**
+3. Create:
+   - **Key**: `rc_weather_api.openweather_api_key`
+   - **Value**: `<API key OpenWeather>`
+4. Save.
+
+### 2) Test di menu OpenWeather
+1. Buka:
+   - **Pemeriksa Cuaca → Pemeriksa Cuaca (OpenWeather)**
+2. Create record, isi **Nama Kota** (contoh: `Tokyo,JP` atau `Jakarta`)
+3. Klik **Dapatkan Cuaca (OpenWeather)**
+
+Endpoint:
+- `https://api.openweathermap.org/data/2.5/weather?q=<city>&appid=<key>&units=metric`
+
+---
+
+## Error Handling
+
+- Timeout / koneksi gagal → Status `Error`, detail di **Pesan Error**
+- HTTP status != 200 → Status `Error`, detail error message (jika ada)
+- JSON tidak sesuai / parsing error → Status `Error`, detail parsing
+
+---
 
 ## Mapping ke Soal Tes (Bagian 1.1)
 
-- **Menu baru**: ✔ `Pemeriksa Cuaca Eksternal`.
-- **Form view** dengan field kota + tombol aksi: ✔
-- **Panggil API eksternal** menggunakan Python + `requests`: ✔
-- **Tampilkan suhu + deskripsi cuaca** di form yang sama: ✔
-- **Validasi & error handling**: ✔
-- **Output**: modul kustom penuh + siap untuk di-screenshot dari Odoo. ✔
+- Menu baru + form + tombol aksi: ✔
+- Panggil API eksternal via Python `requests`: ✔
+- Tampilkan suhu + deskripsi di form yang sama: ✔
+- Validasi & error handling: ✔
+- Konfigurasi API key manual di System Parameters (OpenWeather): ✔

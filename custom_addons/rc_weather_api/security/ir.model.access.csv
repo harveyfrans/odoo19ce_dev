@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_rc_weather_request_user,access_rc_weather_request_user,model_rc_weather_request,base.group_user,1,1,1,1
+access_rc_openweather_request_user,access_rc_openweather_request_user,model_rc_openweather_request,base.group_user,1,1,1,1
