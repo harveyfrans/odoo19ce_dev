@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Action -->
+        <record id="action_helpdesk_ticket" model="ir.actions.act_window">
+            <field name="name">Helpdesk Tickets</field>
+            <field name="res_model">helpdesk.ticket</field>
+            <field name="view_mode">list,form</field>
+        </record>
+
+        <!-- List View -->
+        <record id="view_helpdesk_ticket_tree" model="ir.ui.view">
+            <field name="name">helpdesk.ticket.list</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="arch" type="xml">
+                <list string="Helpdesk Tickets">
+                    <field name="name"/>
+                    <field name="create_date"/>
+                    <field name="partner_id"/>
+                    <field name="sale_order_id"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="state" widget="badge" decoration-info="state == 'open'" decoration-success="state == 'done'" decoration-muted="state == 'draft'"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Form View -->
+        <record id="view_helpdesk_ticket_form" model="ir.ui.view">
+            <field name="name">helpdesk.ticket.form</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="arch" type="xml">
+                <form string="Helpdesk Ticket">
+                    <header>
+                        <button name="action_open" string="Open Ticket" type="object" invisible="state != 'draft'" class="oe_highlight"/>
+                        <button name="action_done" string="Mark Done" type="object" invisible="state != 'open'" class="oe_highlight"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="partner_id"/>
+                                <field name="sale_order_id"/>
+                                <field name="ai_log_ids" widget="many2many_tags"/>
+                            </group>
+                            <group>
+                                <field name="create_date"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description">
+                                <field name="description"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>
