@@ -54,8 +54,8 @@
               <page string="Produk Rekomendasi">
                 <field name="product_ids" widget="many2many_tags"/>
               </page>
-              <page string="Sales Orders">
-                <field name="sale_order_ids"/>
+              <page string="Related Sale Lines">
+                <field name="sale_line_ids"/>
               </page>
             </notebook>
           </sheet>

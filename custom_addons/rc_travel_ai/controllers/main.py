@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import http
 from odoo.http import request
-from odoo.addons.website_sale.controllers.main import WebsiteSale
+
 
 
 class TravelAiController(http.Controller):
@@ -117,15 +117,4 @@ class TravelAiController(http.Controller):
         return request.redirect("/shop/product/%s" % variant.id)
 
 
-class WebsiteSaleWithAi(WebsiteSale):
-    """
-    Inject rc_ai_log_id from session into sale order creation context
-    WITHOUT mutating request.env globally.
-    """
 
-    def _get_pricelist_context(self):
-        ctx = super()._get_pricelist_context()
-        ai_log_id = request.session.get("rc_ai_log_id")
-        if ai_log_id:
-            ctx = dict(ctx, rc_ai_log_id=ai_log_id)
-        return ctx

@@ -1,6 +1,6 @@
 {
     "name": "RC Travel AI Simulation",
-    "version": "19.0.1.0.0",
+    "version": "19.0.2.0.0",
     "summary": "Simulasi AI untuk rekomendasi travel (Tes Kompetensi).",
     "description": """
         Reka Cipta - Tes Kompetensi Odoo Developer

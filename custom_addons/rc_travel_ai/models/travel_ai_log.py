@@ -29,8 +29,10 @@ class TravelAiLog(models.Model):
 
     product_ids = fields.Many2many("product.template", string="Recommended Products")
 
-    sale_order_ids = fields.One2many(
-        "sale.order", "ai_log_id", string="Sales Orders"
+    # Linked lines for traceability (inverse of sale.order.line.ai_log_id)
+    # This replaces the old sale_order_ids
+    sale_line_ids = fields.One2many(
+        "sale.order.line", "ai_log_id", string="Related Sale Lines"
     )
 
     state = fields.Selection(
@@ -64,13 +66,10 @@ class TravelAiLog(models.Model):
         budget_max = 0.0
 
         # Replace common separators and handle multipliers
-        # We'll normalize string to help parsing: "5 juta" -> "5000000", "3k" -> "3000"
         tokens = text_lower.replace(",", "").split()
         
-        # Helper to parse a token as number
         def parse_num(t):
             try:
-                # remove non-digits that might be stuck (like "5hari")
                 clean = "".join(filter(lambda x: x.isdigit() or x == '.', t))
                 return float(clean)
             except ValueError:
@@ -84,7 +83,6 @@ class TravelAiLog(models.Model):
             if val <= 0:
                 continue
 
-            # Check neighbors for context
             prev_word = tokens[i-1] if i > 0 else ""
             next_word = tokens[i+1] if i < len(tokens) - 1 else ""
 
@@ -93,15 +91,14 @@ class TravelAiLog(models.Model):
                 days = int(val)
                 continue
             
-            # Explicit "budget" context or multipliers
+            # Explicit "budget" context
             is_budget = False
             multiplier = 1.0
             
             if "juta" in token or "juta" in next_word or "mio" in next_word:
                 multiplier = 1_000_000
                 is_budget = True
-            elif "k" in token or "rb" in next_word or "ibu" in next_word: # ribu/thousand
-                # "3k" is often 3000. But be careful not to catch "3km". Assuming currency here.
+            elif "k" in token or "rb" in next_word or "ibu" in next_word: 
                 multiplier = 1_000
                 is_budget = True
             elif "budget" in prev_word or "harga" in prev_word or "rp" in prev_word or "usd" in next_word:
@@ -111,24 +108,16 @@ class TravelAiLog(models.Model):
                 budget_max = val * multiplier
                 continue
             
-            # Heuristics if no context found
+            # Heuristics
             if val < 50 and days == 0:
                 days = int(val)
             elif val >= 1000 and budget_max == 0:
                 budget_max = val
 
-        budget_min = 0.0  # Placeholder, not currently extracted logic for min
-
+        budget_min = 0.0
         return destination, days, budget_min, budget_max, travel_type
 
     def action_process(self):
-        """
-        Parse input & compute recommended products.
-
-        IMPORTANT:
-        - Filter products to the log's company (or shared products company_id=False)
-        - Do NOT sudo() the product search. Let rules match what the website user can actually buy.
-        """
         for rec in self:
             dest, days, bmin, bmax, ttype = self._simple_parse_input(rec.request_text)
 
@@ -150,7 +139,7 @@ class TravelAiLog(models.Model):
 
             domain = [
                 ("sale_ok", "=", True),
-                ("company_id", "in", [False, company.id]),  # shared or this company only
+                ("company_id", "in", [False, company.id]),
             ]
 
             if dest:
@@ -160,7 +149,6 @@ class TravelAiLog(models.Model):
                 domain.append(("travel_type", "=", ttype))
 
             if days:
-                # Tighter filtering: +/- 1 day instead of 2
                 domain.append(("travel_days", "<=", days + 1))
                 domain.append(("travel_days", ">=", max(1, days - 1)))
 
@@ -173,29 +161,3 @@ class TravelAiLog(models.Model):
                 "product_ids": [(6, 0, products.ids)],
                 "state": "processed",
             })
-
-
-class SaleOrder(models.Model):
-    _inherit = "sale.order"
-
-    ai_log_id = fields.Many2one(
-        "travel.ai.log",
-        string="AI Recommendation Log",
-        help="Filled when the order is created from Travel AI recommendations.",
-        index=True,
-    )
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        orders = super().create(vals_list)
-
-        ai_log_id = self.env.context.get("rc_ai_log_id")
-        if not ai_log_id:
-            return orders
-
-        # Safety: only set ai_log_id if the log exists
-        log = self.env["travel.ai.log"].sudo().browse(ai_log_id)
-        if log.exists():
-            orders.write({"ai_log_id": log.id})
-
-        return orders
