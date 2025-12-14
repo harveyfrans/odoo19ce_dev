@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- 1) Form: add simulated planning fields (low blast-radius, safe) -->
+    <record id="view_task_form2_planning" model="ir.ui.view">
+        <field name="name">project.task.form.planning</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <sheet position="inside">
+                <group string="Planning (Simulated)" name="planning_simulated">
+                    <group>
+                        <field name="planned_start"/>
+                        <field name="planned_end"/>
+                    </group>
+                    <group>
+                        <field name="planned_hours" widget="float_time"/>
+                        <field name="planned_role"/>
+                    </group>
+                </group>
+            </sheet>
+        </field>
+    </record>
+
+    <!-- 2) Calendar: dedicated simulation view (does NOT override core calendar) -->
+    <record id="view_task_calendar_simulation" model="ir.ui.view">
+        <field name="name">project.task.calendar.simulation</field>
+        <field name="model">project.task</field>
+        <field name="arch" type="xml">
+            <calendar
+                string="Planning Simulation"
+                date_start="planned_start"
+                date_stop="planned_end">
+                <field name="name"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- 3) Action: explicitly binds this calendar view to a separate menu -->
+    <record id="action_project_task_planning" model="ir.actions.act_window">
+        <field name="name">Planning Simulation</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="view_id" ref="view_task_calendar_simulation"/>
+        <field name="domain">[('planned_start', '!=', False)]</field>
+    </record>
+
+    <menuitem id="menu_project_planning"
+              name="Planning (Sim)"
+              parent="project.menu_main_pm"
+              action="action_project_task_planning"
+              sequence="50"/>
+
+    <!-- 4) Search: add filters anchored to <search> for version robustness -->
+    <record id="view_task_search_planning" model="ir.ui.view">
+        <field name="name">project.task.search.planning</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_search_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Has Planning" name="has_planning"
+                        domain="[('planned_start', '!=', False)]"/>
+                <separator/>
+                <filter string="Role: Consultant" name="role_consultant"
+                        domain="[('planned_role', '=', 'consultant')]"/>
+                <filter string="Role: Dev" name="role_dev"
+                        domain="[('planned_role', '=', 'dev')]"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

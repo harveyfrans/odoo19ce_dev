@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Payroll Rules Views -->
+    <record id="view_rc_payroll_rule_tree" model="ir.ui.view">
+        <field name="name">rc.payroll.rule.tree</field>
+        <field name="model">rc.payroll.rule</field>
+        <field name="arch" type="xml">
+            <list string="Payroll Rules">
+                <field name="name"/>
+                <field name="rule_type"/>
+                <field name="min_attendance_days"/>
+                <field name="amount"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rc_payroll_rule_form" model="ir.ui.view">
+        <field name="name">rc.payroll.rule.form</field>
+        <field name="model">rc.payroll.rule</field>
+        <field name="arch" type="xml">
+            <form string="Payroll Rule">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="rule_type"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="min_attendance_days"/>
+                            <field name="amount"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Payroll Run Views -->
+    <record id="view_rc_payroll_run_tree" model="ir.ui.view">
+        <field name="name">rc.payroll.run.tree</field>
+        <field name="model">rc.payroll.run</field>
+        <field name="arch" type="xml">
+            <list string="Payroll Runs" decoration-info="state == 'draft'" decoration-muted="state == 'confirmed'">
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'confirmed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_rc_payroll_run_form" model="ir.ui.view">
+        <field name="name">rc.payroll.run.form</field>
+        <field name="model">rc.payroll.run</field>
+        <field name="arch" type="xml">
+            <form string="Payroll Run">
+                <header>
+                    <button name="action_compute" string="Compute Adjustments" type="object" invisible="state != 'draft'" class="oe_highlight"/>
+                    <button name="action_confirm" string="Confirm" type="object" invisible="state != 'computed'" class="oe_highlight"/>
+                    <button name="action_reset_draft" string="Reset to Draft" type="object" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Adjustments">
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="employee_id"/>
+                                    <field name="attendance_days"/>
+                                    <field name="rule_id"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="note"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_rc_payroll_rule" model="ir.actions.act_window">
+        <field name="name">Payroll Rules</field>
+        <field name="res_model">rc.payroll.rule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_rc_payroll_run" model="ir.actions.act_window">
+        <field name="name">Payroll Runs</field>
+        <field name="res_model">rc.payroll.run</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menus -->
+    <menuitem id="menu_rc_payroll_root" name="Payroll Sim" web_icon="hr,static/description/icon.png" sequence="20"/>
+    <menuitem id="menu_rc_payroll_run" name="Payroll Runs" parent="menu_rc_payroll_root" action="action_rc_payroll_run" sequence="10"/>
+    <menuitem id="menu_rc_payroll_rule" name="Payroll Rules" parent="menu_rc_payroll_root" action="action_rc_payroll_rule" sequence="20"/>
+</odoo>

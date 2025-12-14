@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_rc_payroll_rule_user,rc.payroll.rule.user,model_rc_payroll_rule,base.group_user,1,1,1,1
+access_rc_payroll_run_user,rc.payroll.run.user,model_rc_payroll_run,base.group_user,1,1,1,1
+access_rc_payroll_adjustment_user,rc.payroll.adjustment.user,model_rc_payroll_adjustment,base.group_user,1,1,1,1

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="lang_en" model="rc.lang">
+            <field name="name">English</field>
+            <field name="code">EN</field>
+        </record>
+        <record id="lang_ja" model="rc.lang">
+            <field name="name">Japanese</field>
+            <field name="code">JA</field>
+        </record>
+        <record id="lang_zh" model="rc.lang">
+            <field name="name">Mandarin</field>
+            <field name="code">ZH</field>
+        </record>
+        <record id="lang_de" model="rc.lang">
+            <field name="name">German</field>
+            <field name="code">DE</field>
+        </record>
+        <record id="lang_ar" model="rc.lang">
+            <field name="name">Arabic</field>
+            <field name="code">AR</field>
+        </record>
+    </data>
+</odoo>

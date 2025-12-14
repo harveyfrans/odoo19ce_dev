@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_hr_attendance_form_geo" model="ir.ui.view">
+        <field name="name">hr.attendance.form.geo</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="arch" type="xml">
+            <sheet position="inside">
+                <group string="Geolocation" name="geolocation">
+                    <group>
+                        <field name="geo_source"/>
+                        <field name="geo_note"/>
+                    </group>
+                    <group>
+                        <field name="check_in_lat"/>
+                        <field name="check_in_lng"/>
+                        <field name="check_out_lat"/>
+                        <field name="check_out_lng"/>
+                    </group>
+                </group>
+            </sheet>
+        </field>
+    </record>
+
+    <record id="view_hr_attendance_filter_geo" model="ir.ui.view">
+        <field name="name">hr.attendance.filter.geo</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter string="Has Coordinates"
+                        name="has_coordinates"
+                        domain="[('check_in_lat', '!=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_hr_attendance_tree_geo" model="ir.ui.view">
+        <field name="name">hr.attendance.tree.geo</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='check_out']" position="after">
+                <field name="check_in_lat" string="Latitude (In)"/>
+                <field name="check_in_lng" string="Longitude (In)"/>
+                <field name="check_out_lat" string="Latitude (Out)"/>
+                <field name="check_out_lng" string="Longitude (Out)"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
