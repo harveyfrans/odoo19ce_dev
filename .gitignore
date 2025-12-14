@@ -41,6 +41,7 @@ Thumbs.db
 *.tmp
 *.temp
 *.bak
+docs/_temp_*
 
 # Enterprise source (manage separately or as submodule)
 odoo_enterprise/
